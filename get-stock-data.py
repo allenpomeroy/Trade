@@ -534,7 +534,7 @@ def main():
             log_message(1, f'Processing {ticker}')
             log_message(3, f'  requesting daily data from 1980-01-01',current_frame)
             data = download_daily_ticker_info(ticker, '1980-01-01', datetime.now().strftime('%Y-%m-%d'))
-            if data is not None:
+            if not data.empty:
                 data = calculate_indicators(data)
                 insert_data(ticker, data)
 
