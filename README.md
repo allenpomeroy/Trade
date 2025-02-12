@@ -1,0 +1,2 @@
+# Trade
+AITrade project
