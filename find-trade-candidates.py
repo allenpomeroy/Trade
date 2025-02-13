@@ -4,6 +4,7 @@
 #
 # v1.2 2025/02/12
 # - updated sql logic to find candidates
+# (c) Allen Pomeroy, 2025, MIT License
 
 import argparse
 import MySQLdb
