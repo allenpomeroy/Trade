@@ -52,6 +52,8 @@
 # - pulls historical data from db to properly calculate
 #   long term moving averages
 #
+# (c) Allen Pomeroy, 2025, MIT License
+#
 # TODO and Caveats:
 # - to extend this script to update hourly vs daily,
 #   timestamp handling need to be tightened up to 
