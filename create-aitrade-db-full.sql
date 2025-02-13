@@ -7,7 +7,7 @@
 --
 -- v1.0 2025/02/05
 -- initial version
---
+-- (c) Allen Pomeroy, 2025, MIT License
 
 DROP DATABASE IF EXISTS `aitrade`;
 CREATE DATABASE aitrade;
