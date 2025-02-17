@@ -366,11 +366,11 @@ def main():
         log_message(0, f"{json.dumps(full_data,indent=2)}", current_frame)
         
         if args.webhook:
-            print(f"Sending data to webhook {webhookurl}...")
+            log_message(1, f"Sending data to webhook {webhookurl}")
             send_webhook(webhookurl, json.dumps(full_data))
 
     else:
-        print("No trading candidates found.")
+        log_message(1, "No trading candidates found.")
 
     cursor.close()
     conn.close()
