@@ -63,3 +63,14 @@ Example output of the selection code:
     ]
   }
 }
+
+crontabs being used:
+# populate aitrade database with market cap
+0 17  *  *  1-5  /opt/AITrade/populate-market-cap.py > /opt/AITrade/cap.log 2>&1
+#
+# populate aitrade database with daily ticker data
+0 19  *  *  1-5  /opt/AITrade/get-stock-data.py --all --incremental > /opt/AITrade/get.log 2>&1
+#
+# find trade candidates daily
+0 22  *  *  1-5  /opt/AITrade/find-trade-candidates.py | mailx -s "Trade Candidates"  trades@example.com
+
