@@ -9,6 +9,8 @@
 #
 # (c) Allen Pomeroy, 2025, MIT License
 #
+# v2.1 2025/02/18
+# - added parameters stanza to output JSON
 # v2.0 2025/02/17
 # - added cli options for analysis limits
 #
@@ -296,6 +298,7 @@ def send_webhook(url, payload):
         return None
 
 
+
 def main():
     global debuglevel
 
@@ -311,7 +314,7 @@ def main():
     parser.add_argument("--ma50ma200delta", type=float, default=0.3, help="Max delta between ma50 and ma200 level (default: 0.3).")
     parser.add_argument("--adxminlimit", type=float, default=20.0, help="Min ADX value (default: 20.0).")
     parser.add_argument("--adxmaxlimit", type=float, default=40.0, help="Max ADX value (default: 40.0).")
-    parser.add_argument("--lookbackdays", type=float, default=5.0, help="Max days to look back (default: 5.0).")
+    parser.add_argument("--lookbackdays", type=int, default=5, help="Max days to look back (default: 5).")
     # output control
     parser.add_argument("--history-days", type=int, default=14, help="Number of days of history per candidate to emit (default: 14).")
     parser.add_argument("--webhook", action="store_true", help="When set, send to configured webhook destinations")
@@ -334,43 +337,41 @@ def main():
     # set scope for analysis - all symbols in db or just HDO tickers in list file
     if args.ticker_file:
         tickers = read_tickers_from_file(args.ticker_file)
-
     else:
         tickers = read_tickers_from_database()
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
     log_message(1, f"Finding trading candidates", current_frame)
-    # run query on scope of tickers
     candidates = find_trading_candidates(cursor, tickers, args.min_price, args.max_price, args.rsilimit,
                                          args.ma50ma200delta, args.adxminlimit, args.adxmaxlimit,
                                          args.lookbackdays)
-    
-    if candidates:
-        log_message(1, f"Found {len(candidates)} trading candidates", current_frame)
-        log_message(1, f"{json.dumps(candidates, indent=2)}\n", current_frame)
-        
-        # Create a new dictionary to hold the full data for candidates
-        full_data = {"candidates": {}}
-        
-        # Fetch last history_days days of data for each candidate
-        log_message(1, f"Fetching {history_days} for each candidates", current_frame)
-        for symbol in candidates["candidates"]:
-            log_message(2, f"  fetching history data for {symbol}")
-            history_data = get_history_data(cursor, symbol, history_days)
-            full_data["candidates"][symbol] = history_data
-            
-        # Print the final JSON object with both candidates and their historical data
-        log_message(1, f"Final JSON object with all data:", current_frame)
-        log_message(0, f"{json.dumps(full_data,indent=2)}", current_frame)
-        
-        if args.webhook:
-            log_message(1, f"Sending data to webhook {webhookurl}")
-            send_webhook(webhookurl, json.dumps(full_data))
 
-    else:
-        log_message(1, "No trading candidates found.")
+    # Always define parameters
+    parameters = {
+        "current_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "min_price": args.min_price,
+        "max_price": args.max_price,
+        "rsilimit": args.rsilimit,
+        "ma50ma200delta": args.ma50ma200delta,
+        "adxminlimit": args.adxminlimit,
+        "adxmaxlimit": args.adxmaxlimit,
+        "lookbackdays": args.lookbackdays,
+        "history_days": args.history_days,
+        "webhook": args.webhook,
+        "debuglevel": args.debuglevel
+    }
+
+    # Always output "parameters" and ensure "candidates" exists
+    full_data = {
+        "candidates": candidates["candidates"] if candidates else {},  # Ensure candidates is always present
+        "parameters": parameters
+    }
+
+    log_message(1, f"Final JSON object with all data:", current_frame)
+    log_message(0, json.dumps(full_data, indent=2), current_frame)
+
+    if args.webhook:
+        log_message(1, f"Sending data to webhook {webhookurl}")
+        send_webhook(webhookurl, full_data)
 
     cursor.close()
     conn.close()
